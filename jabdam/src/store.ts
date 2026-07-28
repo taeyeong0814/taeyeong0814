@@ -137,6 +137,13 @@ export class JabdamRoom {
     this.presence.set(this.clientId, this.selfPresence())
   }
 
+  private upsertPresence(presence: Presence): boolean {
+    const prev = this.presence.get(presence.clientId)
+    this.presence.set(presence.clientId, presence)
+    if (!prev) return true
+    return prev.nickname !== presence.nickname
+  }
+
   private prunePresence(): void {
     const now = Date.now()
     let changed = false
@@ -152,14 +159,13 @@ export class JabdamRoom {
   private handlePayload(payload: SyncPayload): void {
     switch (payload.kind) {
       case 'hello':
-        this.presence.set(payload.presence.clientId, payload.presence)
+        const helloChanged = this.upsertPresence(payload.presence)
         this.post({ kind: 'presence', presence: this.selfPresence() })
         this.post({ kind: 'history', messages: this.messages })
-        this.emit()
+        if (helloChanged) this.emit()
         break
       case 'presence':
-        this.presence.set(payload.presence.clientId, payload.presence)
-        this.emit()
+        if (this.upsertPresence(payload.presence)) this.emit()
         break
       case 'bye':
         this.presence.delete(payload.clientId)
