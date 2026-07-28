@@ -106,8 +106,6 @@ export class JabdamRoom {
   send(text: string): void {
     const trimmed = text.trim().slice(0, 500)
     if (!trimmed || !this.nickname) return
-    this.clearMessages()
-    this.post({ kind: 'reset' })
 
     const message: ChatMessage = {
       id: uid(),
@@ -167,9 +165,6 @@ export class JabdamRoom {
         this.presence.delete(payload.clientId)
         this.emit()
         break
-      case 'reset':
-        this.clearMessages()
-        break
       case 'message':
         this.appendMessage(payload.message, false)
         break
@@ -184,12 +179,6 @@ export class JabdamRoom {
     this.messages = [...this.messages, message].slice(-MAX_MESSAGES)
     if (broadcastLocal) saveMessages(this.messages)
     else saveMessages(this.messages)
-    this.emit()
-  }
-
-  private clearMessages(): void {
-    this.messages = []
-    saveMessages(this.messages)
     this.emit()
   }
 
