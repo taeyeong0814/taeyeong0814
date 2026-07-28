@@ -148,8 +148,8 @@ function renderRoom(): void {
     event.preventDefault()
     const text = input.value
     if (!text.trim()) return
-    room.send(text)
     input.value = ''
+    room.send(text)
     input.focus()
   })
 }
