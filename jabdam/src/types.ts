@@ -17,5 +17,6 @@ export type SyncPayload =
   | { kind: 'hello'; presence: Presence }
   | { kind: 'presence'; presence: Presence }
   | { kind: 'bye'; clientId: string }
+  | { kind: 'reset' }
   | { kind: 'message'; message: ChatMessage }
   | { kind: 'history'; messages: ChatMessage[] }
