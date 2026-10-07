@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <title>실시간 번역 자막</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header>
+      <h1>실시간 번역 자막</h1>
+      <p>영상 속 자막을 재생 시각에 맞춰 번역해 화면 위에 띄웁니다.</p>
+    </header>
+    <label class="row">
+      <span>자막 표시</span>
+      <input id="enabled" type="checkbox" />
+    </label>
+    <label class="field">
+      <span>번역 언어</span>
+      <select id="language"></select>
+    </label>
+    <label class="row">
+      <span>원문도 함께 표시</span>
+      <input id="original" type="checkbox" />
+    </label>
+    <label class="field">
+      <span>글자 크기 <b id="size-label">22</b></span>
+      <input id="size" type="range" min="16" max="40" step="1" />
+    </label>
+    <p id="status">페이지를 확인하는 중입니다.</p>
+    <p class="note">자막이 있는 영상에서 동작합니다. 자막 문장만 번역을 위해 Google 번역으로 보냅니다. 음성은 보내지 않습니다.</p>
+    <script src="popup.js"></script>
+  </body>
+</html>

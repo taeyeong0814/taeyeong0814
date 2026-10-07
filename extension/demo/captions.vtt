@@ -1,0 +1,10 @@
+WEBVTT
+
+00:00:00.500 --> 00:00:03.000
+Hello, this is a live subtitle test.
+
+00:00:03.200 --> 00:00:06.000
+The words should appear on the video.
+
+00:00:06.200 --> 00:00:08.500
+Translation follows the playback time.
