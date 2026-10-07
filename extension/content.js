@@ -104,11 +104,14 @@ function applyYoutube() {
   const session = byVideo.get(video) || null;
   if (!session) return;
   if (pendingYoutube.type === "ready") {
+    session.liveMode = false;
     session.setCues(LSTCues.prepareCues(pendingYoutube.events || []), pendingYoutube.language || "auto", "youtube");
+  } else if (pendingYoutube.type === "live") {
+    session.pushLiveCue(pendingYoutube.text || "", pendingYoutube.language || "auto");
   } else if (pendingYoutube.type === "empty") {
-    session.setCues([], "auto", "youtube");
+    if (!session.cues.length) session.setCues([], "auto", "youtube");
   } else if (pendingYoutube.type === "error") {
-    session.failLoad(pendingYoutube.message || "자막을 불러오지 못했습니다");
+    session.failLoad("자막을 불러오지 못했습니다");
   }
   syncYoutubeCaptionStyle();
 }
@@ -225,6 +228,33 @@ class Session {
     byVideo.delete(this.video);
   }
 
+  pushLiveCue(text, language) {
+    const clean = LSTCues.cleanText(text);
+    if (!clean) return;
+    const now = this.video.currentTime || 0;
+    this.liveMode = true;
+    this.origin = "youtube";
+    this.language = language && language !== "auto" ? language : this.language || "auto";
+    this.settled = true;
+    this.loadError = "";
+    const last = this.cues[this.cues.length - 1];
+    if (last && (now < last.start - 0.4 || now > last.end + 1.5)) this.cues.length = 0;
+    const current = this.cues[this.cues.length - 1];
+    if (current && (clean === current.text || clean.startsWith(current.text) || current.text.startsWith(clean))) {
+      if (clean.length >= current.text.length && clean !== current.text) {
+        this.cache.delete(current.text);
+        current.text = clean;
+      }
+      current.end = Math.max(current.end, now + 4);
+    } else {
+      if (current) current.end = Math.max(current.start + 0.3, now);
+      this.cues.push({ start: Math.max(0, now - 0.15), end: now + 6, text: clean });
+    }
+    this.scheduleTranslate();
+    this.render();
+    syncYoutubeCaptionStyle();
+  }
+
   setCues(cues, language, origin) {
     this.cues = cues;
     this.language = language || "auto";
@@ -312,6 +342,10 @@ class Session {
       return;
     }
     const cue = LSTCues.findCue(this.cues, this.video.currentTime || 0);
+    if (!this.cues.length && !this.settled && isYouTube() && this.video === playerVideo()) {
+      this.show("", "", "자막을 찾고 있습니다");
+      return;
+    }
     if (!this.cues.length && this.settled) {
       const notice = this.loadError || "번역할 자막이 없습니다";
       if (!this.statusUntil) this.statusUntil = Date.now() + 6000;
@@ -320,14 +354,15 @@ class Session {
       return;
     }
     if (!cue) {
-      this.show("", "", this.translating ? "번역 중" : "");
+      this.show("", "", "");
       this.clearNative();
       return;
     }
     const translated = this.cache.get(cue.text) || "";
     const showOriginal = settings.showOriginal && !LSTCues.sameLanguage(this.language, settings.targetLanguage);
+    const gaveUp = (this.failures.get(cue.text) || 0) >= 2;
     const line = translated || cue.text;
-    if (!translated) this.scheduleTranslate();
+    if (!translated && !gaveUp) this.scheduleTranslate();
     if (this.useNativeCaption()) {
       this.show("", "", "");
       this.showNative(line);
@@ -335,6 +370,7 @@ class Session {
     }
     this.clearNative();
     if (translated) this.show(showOriginal ? cue.text : "", translated, "");
+    else if (gaveUp) this.show("", cue.text, "");
     else if (showOriginal) this.show(cue.text, "", "번역 중");
     else this.show("", cue.text, "번역 중");
   }
