@@ -1,0 +1,35 @@
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  width: 320px;
+  padding: 16px;
+  color: #1c1917;
+  background: #faf7f2;
+  font: 14px/1.45 "Noto Sans KR", "Apple SD Gothic Neo", sans-serif;
+}
+h1 { margin: 0 0 6px; font-size: 18px; }
+header p, .note, #status { margin: 0; color: #57534e; }
+header { margin-bottom: 14px; }
+.row, .field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 10px 0;
+}
+.field { align-items: stretch; flex-direction: column; }
+select, input[type="range"] { width: 100%; }
+select {
+  border: 1px solid #d6d3d1;
+  border-radius: 8px;
+  background: #fff;
+  padding: 8px;
+  font: inherit;
+}
+#status {
+  margin-top: 12px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #fff;
+}
+.note { margin-top: 10px; font-size: 12px; }
